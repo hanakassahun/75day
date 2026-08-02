@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { ALL_TASK_IDS, TASKS_PER_DAY, TOTAL_DAYS } from "@/lib/challenge-data"
 
 const STORAGE_KEY = "challenge-75:v1"
+const START_KEY = "challenge_start_date"
 
 export interface DayEntry {
   tasks: Record<string, boolean>
@@ -41,18 +42,54 @@ function parseState(raw: string | null): ChallengeState {
 export function useChallenge() {
   const [state, setState] = useState<ChallengeState>(createInitialState)
   const [activeDay, setActiveDay] = useState(1)
+  const [currentDay, setCurrentDay] = useState<number>(1)
   const [hydrated, setHydrated] = useState(false)
 
-  // Load once on mount so server and client markup match on first paint.
+  // Load once on mount and initialize persistent challenge start date.
   useEffect(() => {
-    setState(parseState(window.localStorage.getItem(STORAGE_KEY)))
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const parsed = parseState(raw)
+    // Ensure startedAt aligns with persistent start key if present.
+    const startFromStorage = window.localStorage.getItem(START_KEY)
+    const start = startFromStorage ?? new Date().toISOString()
+    if (!startFromStorage) window.localStorage.setItem(START_KEY, start)
+
+    setState((prev) => ({ ...parsed, startedAt: start }))
     setHydrated(true)
+
+    // compute current day based on start date
+    const compute = () => {
+      try {
+        const startDate = new Date(start)
+        const now = new Date()
+        // floor difference in UTC days
+        const diffMs = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+        const day = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1
+        const clamped = Math.min(Math.max(day, 1), TOTAL_DAYS)
+        setCurrentDay(clamped)
+      } catch {
+        setCurrentDay(1)
+      }
+    }
+
+    compute()
+    const t = setInterval(compute, 60_000)
+    return () => clearInterval(t)
   }, [])
 
   useEffect(() => {
     if (!hydrated) return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state, hydrated])
+
+  // Helper to test whether a given day is the real-world current challenge day.
+  const isDayLocked = useCallback(
+    (day: number) => {
+      if (!hydrated) return false
+      return day !== currentDay
+    },
+    [hydrated, currentDay],
+  )
 
   const getEntry = useCallback(
     (day: number): DayEntry => {
@@ -155,6 +192,8 @@ export function useChallenge() {
     setDayTasks,
     resetAll,
     completionByDay,
+    currentDay,
+    isDayLocked,
     stats,
   }
 }

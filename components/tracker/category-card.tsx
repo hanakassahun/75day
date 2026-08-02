@@ -22,9 +22,10 @@ interface CategoryCardProps {
   checked: Record<string, boolean>
   onToggle: (taskId: string) => void
   onToggleAll: (taskIds: string[], value: boolean) => void
+  disabled?: boolean
 }
 
-export function CategoryCard({ category, day, checked, onToggle, onToggleAll }: CategoryCardProps) {
+export function CategoryCard({ category, day, checked, onToggle, onToggleAll, disabled = false }: CategoryCardProps) {
   const Icon = ICONS[category.icon]
   const taskIds = category.tasks.map((task) => task.id)
   const done = taskIds.filter((id) => checked[id]).length
@@ -33,10 +34,17 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll }: 
   return (
     <article
       className={cn(
-        "flex flex-col rounded-lg border bg-card p-4 transition-colors",
+        "relative flex flex-col rounded-lg border bg-card p-4 transition-colors",
         complete ? "border-accent" : "border-border",
       )}
     >
+      {disabled ? (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <span className="inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-lg animate-bounce motion-reduce:animate-none opacity-95">
+            Naaaaaaahh💀
+          </span>
+        </div>
+      ) : null}
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <span
@@ -66,14 +74,16 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll }: 
               <label
                 htmlFor={inputId}
                 className={cn(
-                  "flex cursor-pointer items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted",
+                  "flex items-start gap-3 rounded-md px-2 py-2 transition-colors",
+                  !disabled ? "cursor-pointer hover:bg-muted" : "",
                   isChecked && "bg-muted/60",
                 )}
               >
                 <Checkbox
                   id={inputId}
                   checked={isChecked}
-                  onCheckedChange={() => onToggle(task.id)}
+                  disabled={disabled}
+                  onCheckedChange={() => !disabled && onToggle(task.id)}
                   className="mt-0.5 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
                 />
                 <span className="min-w-0">
@@ -102,8 +112,12 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll }: 
         </div>
         <button
           type="button"
-          onClick={() => onToggleAll(taskIds, !complete)}
-          className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+          onClick={() => !disabled && onToggleAll(taskIds, !complete)}
+          disabled={disabled}
+          className={cn(
+            "font-mono text-[11px] uppercase tracking-[0.14em] transition-colors",
+            disabled ? "text-muted-foreground opacity-60" : "text-muted-foreground hover:text-foreground",
+          )}
         >
           {complete ? "Clear" : "All done"}
         </button>

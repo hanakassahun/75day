@@ -34,6 +34,8 @@ export function ChallengeDashboard() {
     setDayTasks,
     resetAll,
     completionByDay,
+    currentDay,
+    isDayLocked,
     stats,
   } = useChallenge()
   const [resetOpen, setResetOpen] = useState(false)
@@ -131,6 +133,7 @@ export function ChallengeDashboard() {
                 checked={entry.tasks}
                 onToggle={(taskId) => toggleTask(activeDay, taskId)}
                 onToggleAll={(taskIds, value) => setDayTasks(activeDay, taskIds, value)}
+                disabled={hydrated ? isDayLocked(activeDay) : false}
               />
             ))}
           </div>
@@ -141,6 +144,7 @@ export function ChallengeDashboard() {
               reflection={entry.reflection}
               win={entry.win}
               onChange={(patch) => updateEntry(activeDay, patch)}
+              disabled={hydrated ? isDayLocked(activeDay) : false}
             />
             <ConsistencyMatrix
               completionByDay={completionByDay}
