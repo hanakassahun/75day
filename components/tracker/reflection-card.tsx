@@ -16,7 +16,7 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
       {disabled ? (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <span className="inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-lg animate-bounce motion-reduce:animate-none opacity-95">
-            Naaaaaaahh💀
+            not today😔
           </span>
         </div>
       ) : null}
