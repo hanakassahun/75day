@@ -9,7 +9,7 @@ This project uses Neon + Drizzle ORM.
 Create a local `.env.local` with:
 
 ```dotenv
-DATABASE_URL="postgresql://neondb_owner:npg_e0dZUq5gtFAu@ep-frosty-pond-aupk5rcy-pooler.c-10.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DATABASE_URL="postgresql://user:password@host/db?sslmode=require&channel_binding=require"
 ```
 
 ### Migrations
@@ -20,10 +20,37 @@ Run:
 pnpm migrate
 ```
 
+### Authentication
+
+This project now supports simple session-based auth using App Router route handlers in `app/api/auth/route.ts`.
+
+- `POST /api/auth?action=signup` — register a new user with `email` and `password`
+- `POST /api/auth?action=login` — authenticate and set a session cookie
+- `POST /api/auth?action=logout` — clear auth cookie
+- `GET /api/auth` — returns the current authenticated user
+
 ### API routes
 
-- `GET /api/reflections` returns all reflections
-- `POST /api/reflections` inserts a new reflection
+These use Next.js App Router route handlers in `app/api/reflections/route.ts`.
+
+- `GET /api/reflections` — returns the current user's reflections
+- `POST /api/reflections` — inserts a new reflection for the authenticated user
+
+The reflection body now supports challenge task state data:
+
+```json
+{
+  "content": "Completed my challenge tasks today.",
+  "day": 1,
+  "mood": 8,
+  "rating": 5,
+  "photo_url": "https://example.com/photo.jpg",
+  "tasks": [
+    { "task_id": "fitness-workout", "completed": true, "notes": "Strong session" },
+    { "task_id": "nutrition-diet", "completed": true }
+  ]
+}
+```
 
 Example POST body:
 

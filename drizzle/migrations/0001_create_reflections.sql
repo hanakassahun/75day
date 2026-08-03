@@ -1,17 +1,26 @@
 -- Create extension for UUID generation
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- users table
+CREATE TABLE IF NOT EXISTS users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL UNIQUE,
+  name text,
+  password_hash text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
 -- reflections table
 CREATE TABLE IF NOT EXISTS reflections (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES users(id) ON DELETE SET NULL,
-  challenge_id uuid REFERENCES challenges(id) ON DELETE SET NULL,
+  user_id uuid REFERENCES users(id) ON DELETE CASCADE,
+  challenge_id uuid,
   day integer,
   entry_date date,
   content text NOT NULL,
   mood smallint,
   rating smallint,
-  tags text[],
+  photo_url text,
   meta jsonb DEFAULT '{}'::jsonb,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
