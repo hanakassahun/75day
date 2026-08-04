@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { TASKS_PER_DAY, TOTAL_DAYS } from "@/lib/challenge-data"
 import { cn } from "@/lib/utils"
 
@@ -19,6 +20,8 @@ function toneFor(done: number) {
 }
 
 export function ConsistencyMatrix({ completionByDay, activeDay, onSelect }: ConsistencyMatrixProps) {
+  const days = useMemo(() => Array.from({ length: TOTAL_DAYS }, (_, index) => index + 1), [])
+
   return (
     <section className="rounded-lg border border-border bg-card p-4 md:p-5" aria-label="75 day consistency matrix">
       <div className="flex items-center justify-between">
@@ -27,7 +30,7 @@ export function ConsistencyMatrix({ completionByDay, activeDay, onSelect }: Cons
       </div>
 
       <div className="mt-4 grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
-        {Array.from({ length: TOTAL_DAYS }, (_, index) => index + 1).map((day) => {
+        {days.map((day) => {
           const done = completionByDay[day - 1] ?? 0
           return (
             <button

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Flame, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,18 +14,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useChallenge } from "@/hooks/use-challenge"
+import { AuthUser } from "@/hooks/use-auth"
 import { ALL_TASK_IDS, CATEGORIES, TASKS_PER_DAY, TOTAL_DAYS } from "@/lib/challenge-data"
 import { CategoryCard } from "./category-card"
 import { ConsistencyMatrix } from "./consistency-matrix"
 import { DaySelector } from "./day-selector"
+import { LoadingSpinner } from "./loading-spinner"
 import { ProgressRing } from "./progress-ring"
 import { ReflectionCard } from "./reflection-card"
 import { StatTile } from "./stat-tile"
 import { ThemeToggle } from "./theme-toggle"
 
-export function ChallengeDashboard() {
+export function ChallengeDashboard({ user }: { user: AuthUser }) {
   const {
     hydrated,
+    loadingRemote,
     activeDay,
     setActiveDay,
     getEntry,
@@ -37,13 +40,21 @@ export function ChallengeDashboard() {
     currentDay,
     isDayLocked,
     stats,
-  } = useChallenge()
+  } = useChallenge(user?.id)
   const [resetOpen, setResetOpen] = useState(false)
 
   const entry = getEntry(activeDay)
   const doneToday = ALL_TASK_IDS.filter((id) => entry.tasks[id]).length
   const percentToday = Math.round((doneToday / TASKS_PER_DAY) * 100)
   const overallPercent = Math.round((stats.totalCompleted / (TOTAL_DAYS * TASKS_PER_DAY)) * 100)
+
+  if (loadingRemote) {
+    return (
+      <main className="min-h-screen bg-background px-4 py-12">
+        <LoadingSpinner />
+      </main>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createReflection, getAllReflections } from '@/src/db';
+import { createOrUpdateReflection, getAllReflections } from '@/src/db';
 import { getSessionFromRequest } from '@/src/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -19,17 +19,20 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-
-  if (!body?.content) {
-    return NextResponse.json({ error: 'Missing content' }, { status: 400 });
+  if (body.day === undefined || body.day === null) {
+    return NextResponse.json({ error: 'Missing required field: day' }, { status: 400 });
+  }
+  if (body.content === undefined || body.content === null) {
+    return NextResponse.json({ error: 'Missing required field: content' }, { status: 400 });
   }
 
-  const newReflection = await createReflection({
+  const newReflection = await createOrUpdateReflection({
     user_id: session.user.id,
-    content: body.content,
     challenge_id: body.challenge_id,
     day: body.day,
     entry_date: body.entry_date ? new Date(body.entry_date) : undefined,
+    content: body.content,
+    win: body.win,
     mood: body.mood,
     rating: body.rating,
     photo_url: body.photo_url,

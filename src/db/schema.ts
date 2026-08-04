@@ -24,6 +24,7 @@ export const reflections = pgTable('reflections', {
   day: integer('day'),
   entry_date: date('entry_date'),
   content: text('content').notNull(),
+  win: text('win'),
   mood: smallint('mood'),
   rating: smallint('rating'),
   photo_url: text('photo_url'),

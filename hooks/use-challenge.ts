@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ALL_TASK_IDS, TASKS_PER_DAY, TOTAL_DAYS } from "@/lib/challenge-data"
 
 const STORAGE_KEY = "challenge-75:v1"
@@ -39,11 +39,13 @@ function parseState(raw: string | null): ChallengeState {
   }
 }
 
-export function useChallenge() {
+export function useChallenge(userId?: string) {
   const [state, setState] = useState<ChallengeState>(createInitialState)
   const [activeDay, setActiveDay] = useState(1)
   const [currentDay, setCurrentDay] = useState<number>(1)
   const [hydrated, setHydrated] = useState(false)
+  const [loadingRemote, setLoadingRemote] = useState(false)
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Load once on mount and initialize persistent challenge start date.
   useEffect(() => {
@@ -81,6 +83,89 @@ export function useChallenge() {
     if (!hydrated) return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state, hydrated])
+
+  const loadEntries = useCallback((entries: Array<{ day: number; reflection?: string; win?: string; tasks?: Array<{ task_id: string; completed: boolean }> }>) => {
+    setState((previous) => {
+      const days = { ...previous.days }
+
+      for (const entry of entries) {
+        const tasks: Record<string, boolean> = {}
+        for (const task of entry.tasks ?? []) {
+          tasks[task.task_id] = task.completed
+        }
+
+        days[String(entry.day)] = {
+          tasks,
+          reflection: entry.reflection ?? "",
+          win: entry.win ?? "",
+        }
+      }
+
+      return { ...previous, days }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!userId) return
+    setLoadingRemote(true)
+    fetch("/api/reflections")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Failed to load reflections")
+        return response.json()
+      })
+      .then((data) => {
+        if (!Array.isArray(data)) return
+        loadEntries(data.map((reflection: any) => ({
+          day: reflection.day ?? 0,
+          reflection: reflection.content ?? "",
+          win: reflection.win ?? "",
+          tasks: Array.isArray(reflection.tasks)
+            ? reflection.tasks.map((task: any) => ({ task_id: task.task_id, completed: task.completed }))
+            : [],
+        })))
+      })
+      .catch(() => {
+        // No-op, keep local state if remote loading fails.
+      })
+      .finally(() => setLoadingRemote(false))
+  }, [userId, loadEntries])
+
+  const saveCurrentDay = useCallback(
+    (day: number, entry: DayEntry) => {
+      if (!userId) return
+      fetch("/api/reflections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          day,
+          content: entry.reflection,
+          win: entry.win,
+          tasks: Object.entries(entry.tasks).map(([task_id, completed]) => ({ task_id, completed })),
+        }),
+      })
+    },
+    [userId],
+  )
+
+  useEffect(() => {
+    if (!hydrated || !userId) return
+    const entry = state.days[String(activeDay)]
+    if (!entry) return
+
+    if (saveTimeout.current) {
+      clearTimeout(saveTimeout.current)
+    }
+
+    saveTimeout.current = setTimeout(() => {
+      saveCurrentDay(activeDay, entry)
+    }, 700)
+
+    return () => {
+      if (saveTimeout.current) {
+        clearTimeout(saveTimeout.current)
+      }
+    }
+  }, [activeDay, hydrated, saveCurrentDay, state.days, userId])
 
   // Helper to test whether a given day is the real-world current challenge day.
   const isDayLocked = useCallback(
@@ -135,6 +220,27 @@ export function useChallenge() {
     setActiveDay(1)
   }, [])
 
+  const loadEntries = useCallback((entries: Array<{ day: number; reflection?: string; win?: string; tasks?: Array<{ task_id: string; completed: boolean }> }>) => {
+    setState((previous) => {
+      const days = { ...previous.days }
+
+      for (const entry of entries) {
+        const tasks: Record<string, boolean> = {}
+        for (const task of entry.tasks ?? []) {
+          tasks[task.task_id] = task.completed
+        }
+
+        days[String(entry.day)] = {
+          tasks,
+          reflection: entry.reflection ?? "",
+          win: entry.win ?? "",
+        }
+      }
+
+      return { ...previous, days }
+    })
+  }, [])
+
   const completionByDay = useMemo(() => {
     const result: number[] = []
     for (let day = 1; day <= TOTAL_DAYS; day++) {
@@ -183,6 +289,7 @@ export function useChallenge() {
 
   return {
     hydrated,
+    loadingRemote,
     startedAt: state.startedAt,
     activeDay,
     setActiveDay,
@@ -190,6 +297,7 @@ export function useChallenge() {
     updateEntry,
     toggleTask,
     setDayTasks,
+    loadEntries,
     resetAll,
     completionByDay,
     currentDay,
