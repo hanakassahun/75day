@@ -220,27 +220,6 @@ export function useChallenge(userId?: string) {
     setActiveDay(1)
   }, [])
 
-  const loadEntries = useCallback((entries: Array<{ day: number; reflection?: string; win?: string; tasks?: Array<{ task_id: string; completed: boolean }> }>) => {
-    setState((previous) => {
-      const days = { ...previous.days }
-
-      for (const entry of entries) {
-        const tasks: Record<string, boolean> = {}
-        for (const task of entry.tasks ?? []) {
-          tasks[task.task_id] = task.completed
-        }
-
-        days[String(entry.day)] = {
-          tasks,
-          reflection: entry.reflection ?? "",
-          win: entry.win ?? "",
-        }
-      }
-
-      return { ...previous, days }
-    })
-  }, [])
-
   const completionByDay = useMemo(() => {
     const result: number[] = []
     for (let day = 1; day <= TOTAL_DAYS; day++) {
