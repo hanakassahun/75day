@@ -1,6 +1,6 @@
 import { db } from '../../lib/db';
 import { reflections, taskStatuses } from './schema';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { createSession, createUser, deleteSession, findUserByEmail, getSessionByToken, verifyUserCredentials } from './users';
 
 export const reflectionsTable = reflections;
@@ -29,8 +29,7 @@ export const getReflectionById = async (userId: string, id: string) => {
   const [reflection] = await db
     .select()
     .from(reflections)
-    .where(eq(reflections.user_id, userId))
-    .where(eq(reflections.id, id));
+    .where(and(eq(reflections.user_id, userId), eq(reflections.id, id)));
 
   if (!reflection) return null;
 
@@ -58,8 +57,7 @@ export const createOrUpdateReflection = async (data: {
   const [existing] = await db
     .select()
     .from(reflections)
-    .where(eq(reflections.user_id, data.user_id))
-    .where(eq(reflections.day, data.day));
+    .where(and(eq(reflections.user_id, data.user_id), eq(reflections.day, data.day)));
 
   const values = {
     user_id: data.user_id,
