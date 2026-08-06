@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { toast } from "@/hooks/use-toast"
 import { ALL_TASK_IDS, TASKS_PER_DAY, TOTAL_DAYS } from "@/lib/challenge-data"
 
 const STORAGE_KEY = "challenge-75:v1"
@@ -131,18 +132,30 @@ export function useChallenge(userId?: string) {
   }, [userId, loadEntries])
 
   const saveCurrentDay = useCallback(
-    (day: number, entry: DayEntry) => {
+    async (day: number, entry: DayEntry) => {
       if (!userId) return
-      fetch("/api/reflections", {
+
+      const response = await fetch("/api/reflections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           day,
+          entry_date: new Date().toISOString().slice(0, 10),
           content: entry.reflection,
           win: entry.win,
           tasks: Object.entries(entry.tasks).map(([task_id, completed]) => ({ task_id, completed })),
         }),
       })
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        const errorMessage = payload?.error || 'Unable to save challenge progress.'
+        toast({
+          title: 'Save failed',
+          description: errorMessage,
+          variant: 'destructive',
+        })
+      }
     },
     [userId],
   )

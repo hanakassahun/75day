@@ -17,21 +17,29 @@ export const sessions = pgTable('sessions', {
   created_at: timestamp('created_at').defaultNow(),
 });
 
-export const reflections = pgTable('reflections', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  challenge_id: uuid('challenge_id'),
-  day: integer('day'),
-  entry_date: date('entry_date'),
-  content: text('content').notNull(),
-  win: text('win'),
-  mood: smallint('mood'),
-  rating: smallint('rating'),
-  photo_url: text('photo_url'),
-  meta: jsonb('meta').$type<Record<string, unknown>>().default(sql`'{}'::jsonb`),
-  created_at: timestamp('created_at').defaultNow(),
-  updated_at: timestamp('updated_at').defaultNow(),
-});
+export const reflections = pgTable(
+  'reflections',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    challenge_id: uuid('challenge_id'),
+    day: integer('day').notNull(),
+    entry_date: date('entry_date'),
+    content: text('content').notNull(),
+    win: text('win'),
+    mood: smallint('mood'),
+    rating: smallint('rating'),
+    photo_url: text('photo_url'),
+    meta: jsonb('meta').$type<Record<string, unknown>>().default(sql`'{}'::jsonb`),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('user_day_idx').on(table.user_id, table.day),
+    index('reflections_user_idx').on(table.user_id),
+  ],
+)
+;
 
 export const taskStatuses = pgTable('task_statuses', {
   id: uuid('id').defaultRandom().primaryKey(),
