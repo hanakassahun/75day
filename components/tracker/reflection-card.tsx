@@ -1,5 +1,6 @@
 "use client"
 
+import { Lock } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 
 interface ReflectionCardProps {
@@ -8,20 +9,22 @@ interface ReflectionCardProps {
   win: string
   onChange: (patch: { reflection?: string; win?: string }) => void
   disabled?: boolean
+  isPastDay?: boolean
 }
 
-export function ReflectionCard({ day, reflection, win, onChange, disabled = false }: ReflectionCardProps) {
+export function ReflectionCard({ day, reflection, win, onChange, disabled = false, isPastDay = false }: ReflectionCardProps) {
   return (
     <section className="relative rounded-lg border border-border bg-card p-4 md:p-5" aria-label="Daily reflections">
-      {disabled ? (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <span className="inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-lg animate-bounce motion-reduce:animate-none opacity-95">
-            not today😔
-          </span>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold">Daily reflection</h2>
+          {isPastDay ? (
+            <div className="mt-1 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+              <Lock className="size-3" aria-hidden="true" />
+              <span>Read-only</span>
+            </div>
+          ) : null}
         </div>
-      ) : null}
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Daily reflection</h2>
         <span className="label-mono">Day {String(day).padStart(2, "0")}</span>
       </div>
 
@@ -34,7 +37,7 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
             id={`win-${day}`}
             value={win}
             onChange={(event) => !disabled && onChange({ win: event.target.value })}
-            disabled={disabled}
+            readOnly={disabled}
             placeholder="The thing you are proudest of."
             className="min-h-[72px] resize-none bg-background text-sm leading-relaxed"
           />
@@ -48,7 +51,7 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
             id={`reflection-${day}`}
             value={reflection}
             onChange={(event) => !disabled && onChange({ reflection: event.target.value })}
-            disabled={disabled}
+            readOnly={disabled}
             placeholder="What worked, what did not, and what you will change tomorrow."
             className="min-h-[144px] resize-none bg-background text-sm leading-relaxed"
           />

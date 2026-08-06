@@ -1,6 +1,6 @@
 "use client"
 
-import { Activity, Brain, Code, Flower2, Moon, Salad, Wallet } from "lucide-react"
+import { Activity, Brain, Code, Flower2, Lock, Moon, Salad, Wallet } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Category, IconName } from "@/lib/challenge-data"
@@ -23,9 +23,10 @@ interface CategoryCardProps {
   onToggle: (taskId: string) => void
   onToggleAll: (taskIds: string[], value: boolean) => void
   disabled?: boolean
+  isPastDay?: boolean
 }
 
-export function CategoryCard({ category, day, checked, onToggle, onToggleAll, disabled = false }: CategoryCardProps) {
+export function CategoryCard({ category, day, checked, onToggle, onToggleAll, disabled = false, isPastDay = false }: CategoryCardProps) {
   const Icon = ICONS[category.icon]
   const taskIds = category.tasks.map((task) => task.id)
   const done = taskIds.filter((id) => checked[id]).length
@@ -36,13 +37,13 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
       className={cn(
         "relative flex flex-col rounded-lg border bg-card p-4 transition-colors",
         complete ? "border-accent" : "border-border",
+        disabled ? "opacity-95" : "",
       )}
     >
-      {disabled ? (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <span className="inline-flex items-center justify-center rounded-full bg-gray-600 px-4 py-2 text-sm font-bold text-white shadow-lg animate-bounce motion-reduce:animate-none opacity-95">
-            NO💀
-          </span>
+      {isPastDay ? (
+        <div className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+          <Lock className="size-3" aria-hidden="true" />
+          <span>Locked</span>
         </div>
       ) : null}
       <header className="flex items-start justify-between gap-3">

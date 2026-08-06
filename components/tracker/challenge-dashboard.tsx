@@ -41,6 +41,7 @@ export function ChallengeDashboard({ user }: { user: AuthUser }) {
     isDayLocked,
     stats,
   } = useChallenge(user?.id)
+  const isPastDay = hydrated && activeDay < currentDay
   const [resetOpen, setResetOpen] = useState(false)
 
   const entry = getEntry(activeDay)
@@ -145,6 +146,7 @@ export function ChallengeDashboard({ user }: { user: AuthUser }) {
                 onToggle={(taskId) => toggleTask(activeDay, taskId)}
                 onToggleAll={(taskIds, value) => setDayTasks(activeDay, taskIds, value)}
                 disabled={hydrated ? isDayLocked(activeDay) : false}
+                isPastDay={isPastDay}
               />
             ))}
           </div>
@@ -156,6 +158,7 @@ export function ChallengeDashboard({ user }: { user: AuthUser }) {
               win={entry.win}
               onChange={(patch) => updateEntry(activeDay, patch)}
               disabled={hydrated ? isDayLocked(activeDay) : false}
+              isPastDay={isPastDay}
             />
             <ConsistencyMatrix
               completionByDay={completionByDay}

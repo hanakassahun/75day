@@ -162,6 +162,8 @@ export function useChallenge(userId?: string) {
 
   useEffect(() => {
     if (!hydrated || !userId) return
+    if (activeDay < currentDay) return
+
     const entry = state.days[String(activeDay)]
     if (!entry) return
 
@@ -178,13 +180,13 @@ export function useChallenge(userId?: string) {
         clearTimeout(saveTimeout.current)
       }
     }
-  }, [activeDay, hydrated, saveCurrentDay, state.days, userId])
+  }, [activeDay, currentDay, hydrated, saveCurrentDay, state.days, userId])
 
-  // Helper to test whether a given day is the real-world current challenge day.
+  // Helper to test whether a given day is a past day and should remain read-only.
   const isDayLocked = useCallback(
     (day: number) => {
       if (!hydrated) return false
-      return day !== currentDay
+      return day < currentDay
     },
     [hydrated, currentDay],
   )
