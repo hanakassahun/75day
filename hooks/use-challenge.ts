@@ -215,10 +215,21 @@ export function useChallenge(userId?: string) {
     })
   }, [])
 
-  const resetAll = useCallback(() => {
-    setState(createInitialState())
+  const resetAll = useCallback(async () => {
+    if (userId) {
+      try {
+        await fetch('/api/reflections/reset', { method: 'POST' })
+      } catch {
+        // Ignore remote reset failure and still clear local state.
+      }
+    }
+
+    const now = new Date().toISOString()
+    window.localStorage.setItem(START_KEY, now)
+    setState({ startedAt: now, days: {} })
     setActiveDay(1)
-  }, [])
+    setCurrentDay(1)
+  }, [userId])
 
   const completionByDay = useMemo(() => {
     const result: number[] = []
