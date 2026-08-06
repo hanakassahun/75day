@@ -2,11 +2,10 @@
 
 A high-performance, habit-ledger built for tracking consistency across the definitive 75-day challenge. Unlike traditional trackers that punitively wipe all history on an oversight, this dashboard functions as a daily self-improvement ledger—offering a clean slate every morning while enforcing hard, read-only accountability for past achievements.
 
-![Next.js](https://shields.io)
-![Tailwind CSS](https://shields.io)
-![Drizzle ORM](https://shields.io)
-![Neon Database](https://shields.io)
-
+ ![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=black)
+![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=for-the-badge&logo=drizzle&logoColor=000)
+![Neon](https://img.shields.io/badge/Neon-00E599?style=for-the-badge&logo=neon&logoColor=white)
 ---
 
 ## 🛠️ The Architecture
