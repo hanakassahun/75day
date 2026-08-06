@@ -1,72 +1,45 @@
-# 75day
+ # 75day: The Protocol Tracker ⚡
 
-## Database setup
+A high-performance, habit-ledger built for tracking consistency across the definitive 75-day challenge. Unlike traditional trackers that punitively wipe all history on an oversight, this dashboard functions as a daily self-improvement ledger—offering a clean slate every morning while enforcing hard, read-only accountability for past achievements.
 
-This project uses Neon + Drizzle ORM.
+![Next.js](https://shields.io)
+![Tailwind CSS](https://shields.io)
+![Drizzle ORM](https://shields.io)
+![Neon Database](https://shields.io)
 
-### Environment
+---
 
-Create a local `.env.local` with:
+## 🛠️ The Architecture
 
-```dotenv
-DATABASE_URL="postgresql://user:password@host/db?sslmode=require&channel_binding=require"
-```
+The system tracks **28 interactive daily targets** broken down across 7 foundational cognitive and lifestyle categories:
 
-### Migrations
+*   **Coding** – Keeping the streak hot with daily technical deep-focus and active Git commits.
+*   **Fitness** – Two distinct training sessions paired with intensive daily mobility routines.
+*   **Nutrition** – Strict dietary compliance, hydration benchmarks, and absolute elimination rules.
+*   **Mind** – Non-fiction consumption, continuous concept study, and brain-dump journaling.
+*   **Recovery** – Structured sleep tracking, wind-down boundaries, and intentional resting metrics.
+*   **Finance** – Micro-habit compound tracking, continuous budget audits, and savings goals.
+*   **Self-Care** – Skincare routines, mindfulness checkpoints, and milestone daily progress snapshots.
 
-Run:
+---
 
-```bash
-pnpm migrate
-```
+## ✨ Key Engineering Features
 
-### Authentication
+*   **Read-Only Past-Day Accountability:** Users can look back at their complete chronological history to read old reflections and trace growth, but past days are structurally locked (`readOnly` forms and checkboxes) to prevent revisionist tracking or retrospective cheating.
+*   **Airtight Server-Side Safeguards:** Front-end parameters cannot be spoofed. The backend endpoints parse authenticated sessions directly and block mutations with explicit `403 Forbidden` status codes if any updates are attempted on locked chronological dates.
+*   **GitHub-Style Consistency Matrix:** Dynamically maps task completion percentages to an adaptive gradient grid view, visualizing execution momentum across the entire timeline.
+*   **Intelligent Calendar Rollover:** Automatically tracks local timezone transitions to reset the frontend user ledger state to a clean slate at midnight without requiring manual cache invalidations.
+*   **Optimized Batch Mutations:** State interactions are bundled seamlessly to minimize database pipeline congestion against the serverless database layer.
 
-This project now supports simple session-based auth using App Router route handlers in `app/api/auth/route.ts`.
+---
 
-- `POST /api/auth?action=signup` — register a new user with `email` and `password`
-- `POST /api/auth?action=login` — authenticate and set a session cookie
-- `POST /api/auth?action=logout` — clear auth cookie
-- `GET /api/auth` — returns the current authenticated user
+## 🚀 Tech Stack
 
-### API routes
+*   **Framework:** Next.js (App Router)
+*   **Styling:** Tailwind CSS + shadcn/ui component architecture
+*   **Database Client:** Drizzle ORM
+*   **Database:** Neon (Serverless PostgreSQL Instance)
 
-These use Next.js App Router route handlers in `app/api/reflections/route.ts`.
-
-- `GET /api/reflections` — returns the current user's reflections
-- `POST /api/reflections` — inserts a new reflection for the authenticated user
-
-The reflection body now supports challenge task state data:
-
-```json
-{
-  "content": "Completed my challenge tasks today.",
-  "day": 1,
-  "mood": 8,
-  "rating": 5,
-  "photo_url": "https://example.com/photo.jpg",
-  "tasks": [
-    { "task_id": "fitness-workout", "completed": true, "notes": "Strong session" },
-    { "task_id": "nutrition-diet", "completed": true }
-  ]
-}
-```
-
-Example POST body:
-
-```json
-{
-  "content": "Today I completed my challenge task.",
-  "day": 1,
-  "mood": 8,
-  "rating": 5
-}
-```
-
-### Querying from code
-
-Use the helper at `src/db/index.ts`:
-
-```ts
-import { getAllReflections, createReflection } from '@/src/db';
-```
+---
+ 
+ 
