@@ -24,13 +24,16 @@ interface CategoryCardProps {
   onToggleAll: (taskIds: string[], value: boolean) => void
   disabled?: boolean
   isPastDay?: boolean
+  isFutureDay?: boolean
 }
 
-export function CategoryCard({ category, day, checked, onToggle, onToggleAll, disabled = false, isPastDay = false }: CategoryCardProps) {
+export function CategoryCard({ category, day, checked, onToggle, onToggleAll, disabled = false, isPastDay = false, isFutureDay = false }: CategoryCardProps) {
   const Icon = ICONS[category.icon]
   const taskIds = category.tasks.map((task) => task.id)
   const done = taskIds.filter((id) => checked[id]).length
   const complete = done === taskIds.length
+
+  const isLocked = isPastDay || isFutureDay
 
   return (
     <article
@@ -40,7 +43,7 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
         disabled ? "opacity-95" : "",
       )}
     >
-      {isPastDay ? (
+      {isLocked ? (
         <div className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
           <Lock className="size-3" aria-hidden="true" />
           <span>Locked</span>

@@ -8,7 +8,7 @@ const taskSchema = z.object({
   task_id: z.string().min(1),
   completed: z.boolean(),
   notes: z.string().optional(),
-  meta: z.record(z.unknown()).optional(),
+  meta: z.record(z.string(), z.unknown()).optional(),
 });
 
 const reflectionBodySchema = z.object({
@@ -20,7 +20,7 @@ const reflectionBodySchema = z.object({
   mood: z.number().int().min(1).max(5).optional(),
   rating: z.number().int().min(1).max(5).optional(),
   photo_url: z.string().url().optional(),
-  meta: z.record(z.unknown()).optional(),
+  meta: z.record(z.string(), z.unknown()).optional(),
   tasks: z.array(taskSchema).optional(),
 });
 

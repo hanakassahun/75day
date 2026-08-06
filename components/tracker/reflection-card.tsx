@@ -10,9 +10,11 @@ interface ReflectionCardProps {
   onChange: (patch: { reflection?: string; win?: string }) => void
   disabled?: boolean
   isPastDay?: boolean
+  isToday?: boolean
+  isFutureDay?: boolean
 }
 
-export function ReflectionCard({ day, reflection, win, onChange, disabled = false, isPastDay = false }: ReflectionCardProps) {
+export function ReflectionCard({ day, reflection, win, onChange, disabled = false, isPastDay = false, isToday = false, isFutureDay = false }: ReflectionCardProps) {
   return (
     <section className="relative rounded-lg border border-border bg-card p-4 md:p-5" aria-label="Daily reflections">
       <div className="flex items-center justify-between gap-3">
@@ -57,7 +59,15 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
           />
         </div>
 
-        <p className="label-mono">Saved automatically to this browser</p>
+        <p className="label-mono">
+          {isPastDay
+            ? "🔒 Archived Log (Read-Only)"
+            : isToday
+            ? "⚡ Changes auto-saving live"
+            : isFutureDay
+            ? `⏳ Locked until you reach Day ${day}`
+            : "Saved automatically to this browser"}
+        </p>
       </div>
     </section>
   )
