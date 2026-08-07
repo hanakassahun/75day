@@ -5,6 +5,8 @@ import type { LucideIcon } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Category, IconName } from "@/lib/challenge-data"
 import { cn } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast"
 
 const ICONS: Record<IconName, LucideIcon> = {
   code: Code,
@@ -116,7 +118,42 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
         </div>
         <button
           type="button"
-          onClick={() => !disabled && onToggleAll(taskIds, !complete)}
+          onClick={() => {
+            if (disabled) return
+
+            // If category already has no active tasks, inform the user and no-op.
+            if (done === 0) {
+              toast({ title: 'Category is already clear.', variant: 'default' })
+              return
+            }
+
+            // Capture previous checked state to support undo.
+            const previous = { ...checked }
+
+            // If currently complete, the intent is to clear; otherwise mark all done.
+            if (complete) {
+              onToggleAll(taskIds, false)
+              toast({
+                title: 'Category progress cleared successfully.',
+                variant: 'default',
+                action: (
+                  <ToastAction
+                    altText="Undo clear"
+                    onClick={() => {
+                      // Restore previously-checked tasks by toggling those that were true.
+                      for (const id of taskIds) {
+                        if (previous[id]) onToggle(id)
+                      }
+                    }}
+                  >
+                    Undo
+                  </ToastAction>
+                ),
+              })
+            } else {
+              onToggleAll(taskIds, true)
+            }
+          }}
           disabled={disabled}
           className={cn(
             "font-mono text-[11px] uppercase tracking-[0.14em] transition-colors",

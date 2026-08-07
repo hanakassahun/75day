@@ -38,7 +38,12 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
           <Textarea
             id={`win-${day}`}
             value={win}
-            onChange={(event) => !disabled && onChange({ win: event.target.value })}
+            onChange={(event) => {
+              if (disabled) return
+              const raw = event.target.value
+              const trimmed = raw.trim()
+              onChange({ win: trimmed })
+            }}
             readOnly={disabled}
             placeholder="The thing you are proudest of."
             className="min-h-[72px] resize-none bg-background text-sm leading-relaxed"
@@ -52,7 +57,12 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
           <Textarea
             id={`reflection-${day}`}
             value={reflection}
-            onChange={(event) => !disabled && onChange({ reflection: event.target.value })}
+            onChange={(event) => {
+              if (disabled) return
+              const raw = event.target.value
+              const trimmed = raw.trim()
+              onChange({ reflection: trimmed })
+            }}
             readOnly={disabled}
             placeholder="What worked, what did not, and what you will change tomorrow."
             className="min-h-[144px] resize-none bg-background text-sm leading-relaxed"
