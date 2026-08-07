@@ -40,9 +40,7 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
             value={win}
             onChange={(event) => {
               if (disabled) return
-              const raw = event.target.value
-              const trimmed = raw.trim()
-              onChange({ win: trimmed })
+              onChange({ win: event.target.value })
             }}
             readOnly={disabled}
             placeholder="The thing you are proudest of."
@@ -59,9 +57,7 @@ export function ReflectionCard({ day, reflection, win, onChange, disabled = fals
             value={reflection}
             onChange={(event) => {
               if (disabled) return
-              const raw = event.target.value
-              const trimmed = raw.trim()
-              onChange({ reflection: trimmed })
+              onChange({ reflection: event.target.value })
             }}
             readOnly={disabled}
             placeholder="What worked, what did not, and what you will change tomorrow."

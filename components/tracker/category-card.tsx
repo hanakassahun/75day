@@ -150,17 +150,10 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
           onClick={() => {
             if (disabled) return
 
-            // If category already has no active tasks, inform the user and no-op.
-            if (done === 0) {
-              toast({ title: 'Category is already clear.', variant: 'default' })
-              return
-            }
-
-            // Capture previous checked state to support undo.
-            const previous = { ...checked }
-
-            // If currently complete, the intent is to clear; otherwise mark all done.
+            // If currently complete, clear the category; otherwise mark everything done.
             if (complete) {
+              const previous = { ...checked }
+
               onToggleAll(taskIds, false)
               toast({
                 title: 'Category progress cleared successfully.',
@@ -169,7 +162,6 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
                   <ToastAction
                     altText="Undo clear"
                     onClick={() => {
-                      // Restore previously-checked tasks by toggling those that were true.
                       for (const id of taskIds) {
                         if (previous[id]) onToggle(id)
                       }
@@ -179,9 +171,10 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
                   </ToastAction>
                 ),
               })
-            } else {
-              onToggleAll(taskIds, true)
+              return
             }
+
+            onToggleAll(taskIds, true)
           }}
           disabled={disabled}
           className={cn(
