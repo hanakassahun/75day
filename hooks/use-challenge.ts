@@ -134,25 +134,44 @@ export function useChallenge(userId?: string) {
   const saveCurrentDay = useCallback(
     async (day: number, entry: DayEntry) => {
       if (!userId) return
+      try {
+        const response = await fetch("/api/reflections", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            day,
+            entry_date: new Date().toISOString().slice(0, 10),
+            content: entry.reflection,
+            win: entry.win,
+            tasks: Object.entries(entry.tasks).map(([task_id, completed]) => ({ task_id, completed })),
+          }),
+        })
 
-      const response = await fetch("/api/reflections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          day,
-          entry_date: new Date().toISOString().slice(0, 10),
-          content: entry.reflection,
-          win: entry.win,
-          tasks: Object.entries(entry.tasks).map(([task_id, completed]) => ({ task_id, completed })),
-        }),
-      })
+        if (!response.ok) {
+          const payload = await response.json().catch(() => null)
+          const errorMessage = payload?.error || response.statusText || 'Unable to save challenge progress.'
+          toast({
+            title: 'Save failed',
+            description: errorMessage,
+            variant: 'destructive',
+          })
+          return
+        }
 
-      if (!response.ok) {
+        // Successful HTTP response — inspect body for non-fatal validation warnings
         const payload = await response.json().catch(() => null)
-        const errorMessage = payload?.error || 'Unable to save challenge progress.'
+        if (payload && (payload.error || payload.success === false)) {
+          // Log ambiguous validation/warning responses for debugging, but do not show the destructive toast
+          // to avoid false-positive error messages when the DB updated successfully.
+          // Developers can inspect the browser console for details.
+          // eslint-disable-next-line no-console
+          console.warn('Save returned non-ok payload (treated as warning):', payload)
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
         toast({
           title: 'Save failed',
-          description: errorMessage,
+          description: message || 'Unable to save challenge progress.',
           variant: 'destructive',
         })
       }
@@ -207,9 +226,26 @@ export function useChallenge(userId?: string) {
     setState((previous) => {
       const key = String(day)
       const current = previous.days[key] ?? emptyEntry
+
+      // Avoid writing unnecessary whitespace-only updates when the stored value is already empty.
+      const newPatch: Partial<DayEntry> = { ...patch }
+      if (typeof newPatch.reflection === 'string') {
+        if (newPatch.reflection.trim() === '' && (current.reflection ?? '').trim() === '') {
+          delete newPatch.reflection
+        }
+      }
+      if (typeof newPatch.win === 'string') {
+        if (newPatch.win.trim() === '' && (current.win ?? '').trim() === '') {
+          delete newPatch.win
+        }
+      }
+
+      // If nothing meaningful to update, return previous state unchanged.
+      if (Object.keys(newPatch).length === 0) return previous
+
       return {
         ...previous,
-        days: { ...previous.days, [key]: { ...current, ...patch } },
+        days: { ...previous.days, [key]: { ...current, ...newPatch } },
       }
     })
   }, [])

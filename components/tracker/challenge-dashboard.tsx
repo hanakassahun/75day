@@ -52,6 +52,25 @@ export function ChallengeDashboard({ user }: { user: AuthUser }) {
   const doneToday = ALL_TASK_IDS.filter((id) => entry.tasks[id]).length
   const percentToday = Math.round((doneToday / TASKS_PER_DAY) * 100)
   const overallPercent = Math.round((stats.totalCompleted / (TOTAL_DAYS * TASKS_PER_DAY)) * 100)
+  const [totalUsers, setTotalUsers] = useState<number | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    fetch('/api/community/stats')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!mounted) return
+        if (data && typeof data.total === 'number') setTotalUsers(data.total)
+      })
+      .catch(() => {
+        if (!mounted) return
+        setTotalUsers(null)
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   if (loadingRemote) {
     return (
@@ -132,6 +151,15 @@ export function ChallengeDashboard({ user }: { user: AuthUser }) {
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-1 lg:grid-rows-2">
             <StatTile label="Best streak" value={stats.bestStreak} unit="days" />
             <StatTile label="Reps completed" value={stats.totalCompleted} unit={`/ ${TOTAL_DAYS * TASKS_PER_DAY}`} />
+            <div className="flex items-center justify-start lg:col-span-1">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900/30 text-xs text-zinc-400 font-medium">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>{totalUsers || "..."} members on the protocol</span>
+              </div>
+            </div>
           </div>
         </div>
 
