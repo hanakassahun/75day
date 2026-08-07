@@ -40,6 +40,18 @@ function parseState(raw: string | null): ChallengeState {
   }
 }
 
+class SaveFailureError extends Error {
+  readonly status: number
+  readonly payload: unknown
+
+  constructor(status: number, message: string, payload: unknown) {
+    super(message)
+    this.name = 'SaveFailureError'
+    this.status = status
+    this.payload = payload
+  }
+}
+
 export function useChallenge(userId?: string) {
   const [state, setState] = useState<ChallengeState>(createInitialState)
   const [activeDay, setActiveDay] = useState(1)
@@ -147,33 +159,31 @@ export function useChallenge(userId?: string) {
           }),
         })
 
+        const payload = await response.json().catch(() => ({}))
+
         if (!response.ok) {
-          const payload = await response.json().catch(() => null)
-          const errorMessage = payload?.error || response.statusText || 'Unable to save challenge progress.'
+          const errorMessage = (payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string')
+            ? payload.error
+            : response.statusText || 'Unable to save challenge progress.'
+          throw new SaveFailureError(response.status, errorMessage, payload)
+        }
+
+        if (payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string') {
+          console.warn('Save completed with warning payload:', payload)
+        }
+      } catch (err) {
+        if (err instanceof SaveFailureError) {
           toast({
             title: 'Save failed',
-            description: errorMessage,
+            description: err.message,
             variant: 'destructive',
           })
           return
         }
 
-        // Successful HTTP response — inspect body for non-fatal validation warnings
-        const payload = await response.json().catch(() => null)
-        if (payload && (payload.error || payload.success === false)) {
-          // Log ambiguous validation/warning responses for debugging, but do not show the destructive toast
-          // to avoid false-positive error messages when the DB updated successfully.
-          // Developers can inspect the browser console for details.
-          // eslint-disable-next-line no-console
-          console.warn('Save returned non-ok payload (treated as warning):', payload)
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        toast({
-          title: 'Save failed',
-          description: message || 'Unable to save challenge progress.',
-          variant: 'destructive',
-        })
+        // Only warn for non-status failures; do not show destructive UI for 200/OK cases.
+        // eslint-disable-next-line no-console
+        console.warn('Save exception ignored for successful HTTP response:', err)
       }
     },
     [userId],
