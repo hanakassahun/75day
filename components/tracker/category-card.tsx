@@ -1,6 +1,7 @@
 "use client"
 
-import { Activity, Brain, Code, Flower2, Lock, Moon, Salad, Wallet } from "lucide-react"
+import confetti from "canvas-confetti"
+import { Activity, Brain, Code, Flower2, Lock, Moon, Salad, Star, Wallet } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Category, IconName } from "@/lib/challenge-data"
@@ -17,6 +18,12 @@ const ICONS: Record<IconName, LucideIcon> = {
   wallet: Wallet,
   flower: Flower2,
 }
+
+const EPIC_WIN_IDS = [
+  'coding-commit',
+  'fitness-workout',
+  'nutrition-diet',
+]
 
 interface CategoryCardProps {
   category: Category
@@ -75,6 +82,24 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
         {category.tasks.map((task) => {
           const inputId = `day-${day}-${task.id}`
           const isChecked = Boolean(checked[task.id])
+          const isEpicWin = EPIC_WIN_IDS.includes(task.id)
+
+          const handleToggle = () => {
+            if (disabled) return
+
+            const wasChecked = Boolean(checked[task.id])
+            onToggle(task.id)
+
+            if (!wasChecked && isEpicWin) {
+              confetti({
+                particleCount: 80,
+                spread: 60,
+                origin: { y: 0.65 },
+                colors: ['#10b981', '#34d399', '#6ee7b7'],
+              })
+            }
+          }
+
           return (
             <li key={task.id}>
               <label
@@ -83,23 +108,27 @@ export function CategoryCard({ category, day, checked, onToggle, onToggleAll, di
                   "flex items-start gap-3 rounded-md px-2 py-2 transition-colors",
                   !disabled ? "cursor-pointer hover:bg-muted" : "",
                   isChecked && "bg-muted/60",
+                  isEpicWin && "border border-emerald-400/30 shadow-[0_0_16px_rgba(16,185,129,0.12)]",
                 )}
               >
                 <Checkbox
                   id={inputId}
                   checked={isChecked}
                   disabled={disabled}
-                  onCheckedChange={() => !disabled && onToggle(task.id)}
+                  onCheckedChange={handleToggle}
                   className="mt-0.5 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
                 />
                 <span className="min-w-0">
                   <span
                     className={cn(
-                      "block text-sm leading-snug",
+                      "flex items-center gap-2 text-sm leading-snug",
                       isChecked && "text-muted-foreground line-through",
                     )}
                   >
                     {task.label}
+                    {isEpicWin ? (
+                      <Star className="size-3 text-emerald-400" aria-hidden="true" />
+                    ) : null}
                   </span>
                   {task.hint ? <span className="label-mono mt-0.5 block">{task.hint}</span> : null}
                 </span>
