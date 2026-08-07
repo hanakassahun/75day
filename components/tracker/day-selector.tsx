@@ -8,11 +8,12 @@ import { cn } from "@/lib/utils"
 
 interface DaySelectorProps {
   activeDay: number
+  currentActiveDay: number
   onSelect: (day: number) => void
   completionByDay: number[]
 }
 
-export function DaySelector({ activeDay, onSelect, completionByDay }: DaySelectorProps) {
+export function DaySelector({ activeDay, currentActiveDay, onSelect, completionByDay }: DaySelectorProps) {
   const stripRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export function DaySelector({ activeDay, onSelect, completionByDay }: DaySelecto
           const done = completionByDay[day - 1] ?? 0
           const isPerfect = done === TASKS_PER_DAY
           const isActive = day === activeDay
+          const isToday = day === currentActiveDay
           return (
             <button
               key={day}
@@ -81,6 +83,8 @@ export function DaySelector({ activeDay, onSelect, completionByDay }: DaySelecto
                 "flex size-10 shrink-0 flex-col items-center justify-center rounded-md border font-mono text-xs tabular-nums transition-colors",
                 isActive
                   ? "border-primary bg-primary text-primary-foreground"
+                  : isToday
+                  ? "border-emerald-400/80 bg-emerald-500/10 text-foreground shadow-sm"
                   : "border-border bg-background text-muted-foreground hover:border-accent hover:text-foreground",
               )}
             >
@@ -88,7 +92,15 @@ export function DaySelector({ activeDay, onSelect, completionByDay }: DaySelecto
               <span
                 className={cn(
                   "mt-1 h-1 w-4 rounded-full",
-                  isPerfect ? "bg-accent" : done > 0 ? "bg-accent/40" : isActive ? "bg-primary-foreground/30" : "bg-muted",
+                  isToday
+                    ? "bg-emerald-400"
+                    : isPerfect
+                    ? "bg-accent"
+                    : done > 0
+                    ? "bg-accent/40"
+                    : isActive
+                    ? "bg-primary-foreground/30"
+                    : "bg-muted",
                 )}
               />
             </button>

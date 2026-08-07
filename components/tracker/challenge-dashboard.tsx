@@ -164,7 +164,7 @@ export function ChallengeDashboard({ user }: { user: AuthUser }) {
         </div>
 
         <div className="mt-4">
-          <DaySelector activeDay={activeDay} onSelect={setActiveDay} completionByDay={completionByDay} />
+          <DaySelector activeDay={activeDay} currentActiveDay={currentActiveDay} onSelect={setActiveDay} completionByDay={completionByDay} />
         </div>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
