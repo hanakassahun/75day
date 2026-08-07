@@ -72,9 +72,14 @@ export const createOrUpdateReflection = async (data: {
     meta: data.meta,
   };
 
-  const [reflection] = existing
-    ? await db.update(reflections).set(values).where(eq(reflections.id, existing.id)).returning()
-    : await db.insert(reflections).values(values).returning();
+  const [reflection] = await db
+    .insert(reflections)
+    .values(values)
+    .onConflictDoUpdate({
+      target: [reflections.user_id, reflections.day],
+      set: values,
+    })
+    .returning();
 
   if (!reflection?.id) {
     return reflection;
